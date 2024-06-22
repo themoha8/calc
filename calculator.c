@@ -23,7 +23,7 @@ static int precedence(char op) {
 }
 
 int shunting_yard(const char *infix, char *postfix) {
-    int i = 0, j = 0, count = 0;
+    int i = 0, j = 0, n_par = 0, n_num = 0, n_op = 0;
     char stack[STACK_SIZE];
     int sp = -1;
 
@@ -36,6 +36,12 @@ int shunting_yard(const char *infix, char *postfix) {
         }
 
         if (is_digit(op) || (op == '-' && is_digit(infix[i+1]))) {
+            n_num++;
+            if (n_op > 1) {
+                fprintf(stderr, "calc: Invalid arithmetic expression ([operator operator number] instead of [number operator number])\n");
+                return 0;
+            } else if (n_op > 0)
+                n_op--;
             while ((is_digit(infix[i])) || infix[i] == '-' || infix[i] == '.') {
                 postfix[j++] = infix[i++];
                 if (infix[i] == '-')
@@ -44,6 +50,12 @@ int shunting_yard(const char *infix, char *postfix) {
             postfix[j++] = ' ';
         }
         else if (is_operator(op)) {
+            n_op++;
+            if (n_num > 1) {
+                fprintf(stderr, "calc: Invalid arithmetic expression ([number number operator] instead of [number operator number])\n");
+                return 0;
+            } else if (n_num > 0)
+                n_num--;
             while (sp != -1 && precedence(stack[sp]) >= precedence(op)) {
                 postfix[j++] = stack[sp--];
                 postfix[j++] = ' ';
@@ -58,7 +70,7 @@ int shunting_yard(const char *infix, char *postfix) {
             }
         }
         else if (op == '(') {
-            count++;
+            n_par++;
             if (sp+1 < STACK_SIZE) {
                 stack[++sp] = op;
                 i++;
@@ -69,11 +81,11 @@ int shunting_yard(const char *infix, char *postfix) {
             }
         }
         else if (op == ')') {
-            if (!count) {
+            if (!n_par) {
                 fprintf(stderr, "calc: opening parethesis missing\n");
                 return 0;
             }
-            count--;
+            n_par--;
             while (sp != -1 && stack[sp] != '(') {
                 postfix[j++] = stack[sp--];
                 postfix[j++] = ' ';
@@ -85,6 +97,14 @@ int shunting_yard(const char *infix, char *postfix) {
             fprintf(stderr, "calc: error while parsing: '%c'\n", op);
             return 0;
         }
+    }
+
+    if (n_op) {
+        fprintf(stderr, "calc: too many operators\n");
+        return 0;
+    } else if (n_num > 1) {
+        fprintf(stderr, "calc: too many numbers\n");
+        return 0;
     }
 
     while (sp != -1) {
