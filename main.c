@@ -16,7 +16,8 @@ static const char logo[] =
 " \\____\\__,_|_|\\___|\\__,_|_|\\__,_|\\__\\___/|_|   \n\n";
 
 static const char welcome[] = "Write a arihmetic expression using "
-"'+', '-', '*', '/', '%%' and '^'\nExample: (2 + 3) * 4^3 + 4.5\n\n\n\n";
+"'+', '-', '*', '/', '%%' and '^'\nTo exit, press: Ctrl-D for Linux, " 
+"Ctrl-C for Windows\nExample: (2 + 3) * 4^3 + 4.5\n\n\n\n";
 
 #if FOR_WINDOWS
 static void term_setup(void)
@@ -67,20 +68,26 @@ int main() {
 
 #if FOR_WINDOWS
     while (fgets(infix, EXPRESSION_SIZE, stdin) != NULL) {
-        if (shunting_yard(infix, postfix)) {
-            printf("Postfix expression: %s\n\n", postfix);
+           if (shunting_yard(infix, postfix) && *infix != '\n') {
+            double res;
+            res = evaluate_rpn(postfix);
+            printf("Answer: %g\n\n", res);
         }
         printf("Enter infix expression:\n");
-        free(infix);
     }
 #elif FOR_TESTING
-    fgets(infix, EXPRESSION_SIZE, stdin);
-    if (shunting_yard(infix, postfix))
-        printf("Postfix expression: %s\n\n", postfix);
+    if(fgets(infix, EXPRESSION_SIZE, stdin))
+        if (shunting_yard(infix, postfix) && *infix != '\n') {
+            double res;
+            res = evaluate_rpn(postfix);
+            printf("Answer: %g\n\n", res);
+        }
 #else
     while ((infix = readline(NULL)) != NULL) {
-        if (shunting_yard(infix, postfix)) {
-             printf("Postfix expression: %s\n\n", postfix);
+        if (shunting_yard(infix, postfix) && *infix != '\0') {
+            double res;
+            res = evaluate_rpn(postfix);
+            printf("Answer: %g\n\n", res);
         }
         printf("Enter infix expression: \n");
         free(infix);

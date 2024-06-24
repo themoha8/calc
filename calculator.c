@@ -22,6 +22,20 @@ static int precedence(char op) {
     return 0;
 }
 
+static double power(double base, int exponent)
+{
+    double result = 1.0;
+    int i;
+
+    for (i = 0; i < abs(exponent); i++)
+        result *= base;
+
+    if (exponent < 0)
+        result = 1.0 / result;
+
+    return result;
+}
+
 int shunting_yard(const char *infix, char *postfix) {
     int i = 0, j = 0, n_par = 0, n_num = 0, n_op = 0;
     char stack[STACK_SIZE];
@@ -127,4 +141,46 @@ int shunting_yard(const char *infix, char *postfix) {
 
     postfix[j] = '\0';
     return 1;
+}
+
+double evaluate_rpn(char *expression)
+{
+    double stack[STACK_SIZE];
+    int sp = -1;
+    char *token = strtok(expression, " ");
+
+    while(token != NULL) {
+        if (is_digit(*token) || (is_digit(token[1]) && *token == '-')) {
+            stack[++sp] = atof(token);
+        }
+        else if (is_operator(*token)) {
+            double op2 = stack[sp--];
+            double op1 = stack[sp--];
+            double result = 0;
+
+            switch(*token) {
+            case '+':
+                result = op1 + op2;
+                break;
+            case '-':
+                result = op1 - op2;
+                break;
+            case '*':
+                result = op1 * op2;
+                break;
+            case '/':
+                result = op1 / op2;
+                break;
+            case '%':
+                result = (int)op1 % (int)op2;
+                break;
+            case '^':
+                result = power(op1, (int)op2);
+            }
+
+            stack[++sp] = result;
+        }
+        token = strtok(NULL, " ");
+    }
+    return stack[sp];
 }
