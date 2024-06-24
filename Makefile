@@ -6,17 +6,25 @@ CC = gcc
 
 ifeq ($(RELEASE), 1)
 	#CFLAGS = -Wall -Werror -Wextra -ansi -pedantic -O3
-	CFLAGS = -Wall -Werror -Wextra -O3
+	TCFLAGS = -Wall -Werror -Wextra -O3 -l readline
 else
 	#CFLAGS = -Wall -Werror -Wextra -ansi -pedantic -g -O0
-	CFLAGS = -Wall -Werror -Wextra -g -O0
+	TCFLAGS = -Wall -Werror -Wextra -g -O0 -l readline
+endif
+
+ifeq ($(WINDOWS), 1)
+	CFLAGS = $(TCFLAGS) -D FOR_WINDOWS
+else ifeq ($(TESTING), 1)
+	CFLAGS = $(TCFLAGS) -D FOR_TESTING
+else
+	CFLAGS = $(TCFLAGS)
 endif
 
 $(PROGRAM_NAME): main.c $(OBJMODULES)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $^ $(CFLAGS) -o $@
 
 $(OBJ_PATH)%.o: %.c %.h
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) -c $< $(CFLAGS) -o $@
 
 $(OBJ_PATH)deps.mk: $(SRCMODULES)
 	$(CC) -MM $^ > $@

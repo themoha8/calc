@@ -70,6 +70,11 @@ int shunting_yard(const char *infix, char *postfix) {
             }
         }
         else if (op == '(') {
+            if (infix[i+1] == '*' || infix[i+1] == '/' || infix[i+1] == '%' ||
+                infix[i+1] == '^' || infix[i+1] == '+') {
+                fprintf(stderr, "calc: invalid expression in parentheses\n");
+                return 0;
+            }
             n_par++;
             if (sp+1 < STACK_SIZE) {
                 stack[++sp] = op;
@@ -81,6 +86,10 @@ int shunting_yard(const char *infix, char *postfix) {
             }
         }
         else if (op == ')') {
+            if (n_op) {
+                fprintf(stderr, "calc: invalid expression in parentheses\n");
+                return 0;
+            }
             if (!n_par) {
                 fprintf(stderr, "calc: opening parethesis missing\n");
                 return 0;
