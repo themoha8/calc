@@ -3,7 +3,7 @@
 #include <string.h>
 #include "calculator.h"
 
-#define STACK_SIZE 64
+#define STACK_SIZE 32
 
 static inline int is_digit(int op)
 {
@@ -45,7 +45,12 @@ int shunting_yard(const char *infix, char *postfix) {
         char op = infix[i];
 
         if (op == ' ' || op == '\t' || op == '\n') {
-            i++;
+            if (i < EXPRESSION_SIZE)
+                i++;
+            else {
+                fprintf(stderr, "calc: too long expression\n");
+                return 0;
+            }
             continue;
         }
 
@@ -76,7 +81,12 @@ int shunting_yard(const char *infix, char *postfix) {
             }
             if (sp+1 < STACK_SIZE) {
                 stack[++sp] = op;
-                i++;
+                if (i < EXPRESSION_SIZE)
+                    i++;
+                else {
+                    fprintf(stderr, "calc: too long expression\n");
+                    return 0;
+                }
             }
             else {
                 fprintf(stderr, "calc: stack full, too many operations\n");
@@ -91,8 +101,20 @@ int shunting_yard(const char *infix, char *postfix) {
             }
             n_par++;
             if (sp+1 < STACK_SIZE) {
-                stack[++sp] = op;
-                i++;
+
+                if (sp+1 < STACK_SIZE)
+                    stack[++sp] = op;
+                else {
+                    fprintf(stderr, "calc: stack full, too many operations\n");
+                    return 0;
+                }
+
+                if (i < EXPRESSION_SIZE)
+                    i++;
+                else {
+                    fprintf(stderr, "calc: too long expression\n");
+                    return 0;
+                }
             }
             else {
                 fprintf(stderr, "calc: stack full, too many operations\n");
@@ -114,7 +136,13 @@ int shunting_yard(const char *infix, char *postfix) {
                 postfix[j++] = ' ';
             }
             if (sp != -1) sp--;
-            i++;
+
+            if (i < EXPRESSION_SIZE)
+                i++;
+            else {
+                fprintf(stderr, "calc: too long expression\n");
+                return 0;
+            }
         }
         else {
             fprintf(stderr, "calc: error while parsing: '%c'\n", op);
