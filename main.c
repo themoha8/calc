@@ -8,6 +8,14 @@
 #include <stdio.h>
 #include "calculator.h"
 
+#define SET_CURSOR(x, y) printf("\x1b[%d;%dH", y, x)
+#define HIDE_CURSOR() printf("\x1b[?25l")
+#define SHOW_CURSOR() printf("\x1b[?25h")
+#define CLEAR_SCREEN() printf("\x1b[2J")
+#define SET_COLOR(color) printf("\x1b[%dm", color)
+
+enum { font_orange = 33, default_font = 39 };
+
 static const char logo[] =
 "  ____      _            _       _             \n"
 " / ___|__ _| | ___ _   _| | __ _| |_ ___  _ __ \n"
@@ -54,15 +62,11 @@ int main() {
     term_setup();
 #endif
 
-    /* set cursor position */
-    printf("\x1b[1;1H");
-    /* clear screen */
-    printf("\x1b[2J");
-    /* set font color */
-    printf("\x1b[33m");
+    CLEAR_SCREEN();
+    SET_CURSOR(0, 0);
+    SET_COLOR(font_orange);
     printf(logo);
-    /* set default font */
-    printf("\x1b[0m");
+    SET_COLOR(default_font);
     printf(welcome);
     printf("Enter infix expression: \n");
 
@@ -94,6 +98,7 @@ int main() {
     }
 #endif
 
-    printf("Bye bye!\n");
+    CLEAR_SCREEN();
+    SET_CURSOR(0, 0);
     return 0;
 }
